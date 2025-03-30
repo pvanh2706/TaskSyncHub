@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TaskSystemHub.Application\TaskSystemHub.Application.csproj" />
+    <ProjectReference Include="..\TaskSystemHub.Domain\TaskSystemHub.Domain.csproj" />
+    <ProjectReference Include="..\TaskSystemHub.Shared\TaskSystemHub.Shared.csproj" />
+    <ProjectReference Include="..\TaskSystemHub.Persistence\TaskSystemHub.Persistence.csproj" />
+  </ItemGroup>
+
+</Project>
