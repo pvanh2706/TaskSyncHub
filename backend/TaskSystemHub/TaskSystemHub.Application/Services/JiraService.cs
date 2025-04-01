@@ -1,42 +1,37 @@
-// using System.Collections.Generic;
-// using System.Threading.Tasks;
-// using TaskSystemHub.Domain.Entities;
-// using TaskSystemHub.Infrastructure.Jira;
-// using TaskSystemHub.Application.Interfaces;
+using TaskSystemHub.Application.Interfaces;
+using TaskSystemHub.Shared.DTOs;
 
+namespace TaskSystemHub.Application.Services
+{
+    public class JiraService : IJiraService
+    {
+        private readonly IJiraApiClient _jiraApiClient;
 
-// namespace TaskSystemHub.Application.Services
-// {
-//     public class JiraService
-//     {
-//         private readonly JiraApiClient _jiraApiClient;
-//        //  private readonly ITaskRepository _taskRepository;
+        public JiraService(IJiraApiClient jiraApiClient)
+        {
+            _jiraApiClient = jiraApiClient;
+        }
 
-//         public JiraService(JiraApiClient jiraApiClient)
-//         {
-//             _jiraApiClient = jiraApiClient;
-//         }
+        public async Task<JiraBoardDTO> GetBoardFromJiraAsync()
+        {
+            return await _jiraApiClient.GetBoardFromJiraAsync();
+        }
 
-//         // public async Task SyncTasksFromJiraAsync()
-//         // {
-//         //     var jiraIssues = await _jiraApiClient.GetIssuesFromJiraAsync();
-//         //     if (jiraIssues == null) return;
+        public async Task<string> GetStringBoardFromJiraAsync()
+        {
+            return await _jiraApiClient.GetStringBoardFromJiraAsync();
+        }
 
-//         //     var tasks = new List<TaskEntity>();
-
-//         //     foreach (var issue in jiraIssues)
-//         //     {
-//         //         var task = new TaskEntity
-//         //         {
-//         //             Title = issue.Fields.Summary,
-//         //             Description = issue.Fields.Description,
-//         //             JiraIssueKey = issue.Key,
-//         //             Status = issue.Fields.Status.Name
-//         //         };
-//         //         tasks.Add(task);
-//         //     }
-
-//         //     await _taskRepository.AddTasksAsync(tasks);
-//         // }
-//     }
-// }
+        public async Task<JiraBoardResponse> GetBoardResponseFromJiraAsync()
+        {
+            try
+            {
+                return await _jiraApiClient.GetBoardResponseFromJiraAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to get board response from Jira: {ex.Message}");
+            }
+        }
+    }
+}

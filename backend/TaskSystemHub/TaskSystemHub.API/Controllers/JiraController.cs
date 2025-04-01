@@ -1,26 +1,45 @@
-// using Microsoft.AspNetCore.Mvc;
-// using System.Threading.Tasks;
-// using TaskSystemHub.Application.Services;
-// using TaskSystemHub.Application.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+using TaskSystemHub.Application.Interfaces;
 
-// namespace TaskSystemHub.API.Controllers
-// {
-//     // [Route("api/[controller]")]
-//     // [ApiController]
-//     // public class JiraController : ControllerBase
-//     // {
-//     //     private readonly JiraService _jiraService;
+namespace TaskSystemHub.API.Controllers
+{
+    [Route("api/jira")]
+    [ApiController]
+    public class JiraController : ControllerBase
+    {
+        private readonly IJiraService _jiraService;
 
-//     //     public JiraController(JiraService jiraService)
-//     //     {
-//     //         _jiraService = jiraService;
-//     //     }
+        public JiraController(IJiraService jiraService)
+        {
+            _jiraService = jiraService;
+        }
 
-//         // [HttpPost("sync")]
-//         // public async Task<IActionResult> SyncTasks()
-//         // {
-//         //     await _jiraService.SyncTasksFromJiraAsync();
-//         //     return Ok("Tasks synced successfully");
-//         // }
-//    // }
-// }
+        [HttpGet("board")]
+        public async Task<IActionResult> GetBoardFromJiraAsync()
+        {
+            var board = await _jiraService.GetBoardFromJiraAsync();
+            return Ok(board);
+        }
+
+        [HttpGet("board-string")]
+        public async Task<IActionResult> GetStringBoardFromJiraAsync()
+        {
+            var board = await _jiraService.GetStringBoardFromJiraAsync();
+            return Ok(board);
+        }
+
+        [HttpGet("board-response")]
+        public async Task<IActionResult> GetBoardResponseFromJiraAsync()
+        {   
+            try
+            {
+                var board = await _jiraService.GetBoardResponseFromJiraAsync();
+                return Ok(board);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Failed to get board response from Jira: {ex.Message}");
+            }
+        }
+   }
+}

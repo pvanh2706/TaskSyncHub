@@ -12,6 +12,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
@@ -20,6 +23,7 @@
     <ProjectReference Include="..\TaskSystemHub.Domain\TaskSystemHub.Domain.csproj" />
     <ProjectReference Include="..\TaskSystemHub.Shared\TaskSystemHub.Shared.csproj" />
     <ProjectReference Include="..\TaskSystemHub.Persistence\TaskSystemHub.Persistence.csproj" />
+    <ProjectReference Include="..\TaskSystemHub.Infrastructure\TaskSystemHub.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

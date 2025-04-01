@@ -3,7 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\TaskSystemHub.Domain\TaskSystemHub.Domain.csproj" />
     <ProjectReference Include="..\TaskSystemHub.Shared\TaskSystemHub.Shared.csproj" />
-    <ProjectReference Include="..\TaskSystemHub.Infrastructure\TaskSystemHub.Infrastructure.csproj" />
+    <!-- <ProjectReference Include="..\TaskSystemHub.Infrastructure\TaskSystemHub.Infrastructure.csproj" /> -->
   </ItemGroup>
 
   <PropertyGroup>

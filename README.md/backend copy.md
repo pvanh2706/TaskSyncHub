@@ -94,7 +94,9 @@ dotnet add TaskSystemHub.Persistence package Microsoft.EntityFrameworkCore.Tools
 dotnet add TaskSystemHub.API package Microsoft.EntityFrameworkCore.Design
 dotnet add TaskSystemHub.Shared package Newtonsoft.Json
 
-
+cd TaskSystemHub.Infrastructure
+dotnet add package Microsoft.Extensions.Configuration
+dotnet add package Microsoft.Extensions.Configuration.Json
 ```
 #### 2.2 Tạo DbContext
 Trong `TaskSystemHub.Persistence`, tạo file `TaskDbContext.cs`:
@@ -289,7 +291,7 @@ Nếu bạn muốn đóng góp, hãy tạo Pull Request với mô tả chi tiế
 ## Giấy phép
 Dự án này được phát hành dưới giấy phép MIT.
 
-
+Cấu trúc TaskSystemHub
 ``` json
 /TaskSystemHub
 │── /TaskSystemHub.API                  → Dự án Web API (Application Entry Point)
@@ -338,3 +340,12 @@ Dự án này được phát hành dưới giấy phép MIT.
 │
 │── /TaskSystemHub.sln                   → File Solution
 ```
+
+### Ghi log 
+Chạy lệnh sau trong thư mục TaskSystemHub.API:
+```sh
+dotnet add package Serilog.AspNetCore
+dotnet add package Serilog.Sinks.File
+dotnet add package Serilog.Sinks.Console
+```
+

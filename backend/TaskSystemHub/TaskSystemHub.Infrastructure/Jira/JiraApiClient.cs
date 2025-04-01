@@ -4,34 +4,82 @@
 // using System.Text.Json;
 // using System.Threading.Tasks;
 // using TaskSystemHub.Shared.DTOs;
+using Microsoft.Extensions.Configuration;
+using TaskSystemHub.Application.Interfaces;
+using System.Net.Http.Headers;
+using System.Text;
+using TaskSystemHub.Shared.Constants;
+using Newtonsoft.Json;
+using TaskSystemHub.Shared.DTOs;
+using Serilog;
 
-// namespace TaskSystemHub.Infrastructure.Jira
-// {
-//     public class JiraApiClient
-//     {
-//         private readonly HttpClient _httpClient;
-//         private readonly string _jiraBaseUrl = "https://your-jira-instance.atlassian.net";
-//         private readonly string _jiraToken = "your-api-token"; // Nên lấy từ cấu hình
+namespace TaskSystemHub.Infrastructure.Jira
+{
+    public class JiraApiClient : IJiraApiClient
+    {
+        private readonly HttpClient _httpClient;
+        private readonly string _jiraBaseUrl;
 
-//         public JiraApiClient(HttpClient httpClient)
-//         {
-//             _httpClient = httpClient;
-//             _httpClient.DefaultRequestHeaders.Authorization = 
-//                 new AuthenticationHeaderValue("Basic", Convert.ToBase64String(
-//                     Encoding.ASCII.GetBytes($"your-email:your-api-token")));
-//         }
+        public JiraApiClient(HttpClient httpClient, IConfiguration configuration)
+        {
+            _httpClient = httpClient;
+            _jiraBaseUrl = configuration["Jira:BaseUrl"] ?? throw new ArgumentNullException("JiraBaseUrl is missing in configuration");
 
-//         // public async Task<List<JiraIssueDto>> GetIssuesFromJiraAsync()
-//         // {
-//         //     var url = $"{_jiraBaseUrl}/rest/api/3/search?jql=project=YOUR_PROJECT";
-//         //     var response = await _httpClient.GetAsync(url);
+            string userName = configuration["Jira:UserName"] ?? throw new ArgumentNullException("JiraUserName is missing in configuration");
+            string password = configuration["Jira:Password"] ?? throw new ArgumentNullException("JiraPassword is missing in configuration");
+            // string token = configuration["Jira:Token"] ?? throw new ArgumentNullException("JiraToken is missing in configuration");
 
-//         //     if (!response.IsSuccessStatusCode)
-//         //         return null;
+            string authToken = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{userName}:{password}"));
+            _httpClient.BaseAddress = new Uri(_jiraBaseUrl);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authToken);
+        }
 
-//         //     var json = await response.Content.ReadAsStringAsync();
-//         //     var result = JsonSerializer.Deserialize<JiraSearchResultDto>(json);
-//         //     return result.Issues;
-//         // }
-//     }
-// }
+        public async Task<JiraBoardDTO> GetBoardFromJiraAsync()
+        {
+            var response = await _httpClient.GetAsync(ApiRoutes.Jira.GetBoard);
+            var content = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"Failed to get board from Jira: {content}");
+            }
+            JiraBoardDTO result = JsonConvert.DeserializeObject<JiraBoardDTO>(content);
+            return result;
+        }
+
+        public async Task<string> GetStringBoardFromJiraAsync()
+        {
+            var response = await _httpClient.GetAsync(ApiRoutes.Jira.GetBoard);
+            var content = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"Failed to get board from Jira: {content}");
+            }
+            return content;
+        }
+
+        public async Task<JiraBoardResponse> GetBoardResponseFromJiraAsync()
+        {
+            var response = await _httpClient.GetAsync(ApiRoutes.Jira.GetBoard);
+            var content = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"Failed to get board from Jira: {content}");
+            }
+            if (string.IsNullOrEmpty(content))
+            {
+                throw new Exception("Failed to get board from Jira: Empty response");
+            }
+            try
+            {
+                JiraBoardResponse result = JsonConvert.DeserializeObject<JiraBoardResponse>(content);
+                Log.Information("Successfully got board from Jira {Content}", content);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Failed to deserialize board response from Jira: {ex.Message}");
+                throw new Exception($"Failed to deserialize board response from Jira: {ex.Message}");
+            }
+        }
+    }
+}
