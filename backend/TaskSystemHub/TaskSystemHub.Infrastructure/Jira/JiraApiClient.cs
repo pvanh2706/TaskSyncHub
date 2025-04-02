@@ -81,5 +81,28 @@ namespace TaskSystemHub.Infrastructure.Jira
                 throw new Exception($"Failed to deserialize board response from Jira: {ex.Message}");
             }
         }
+
+        public async Task<string> GetSprintActiveFromJiraAsync(int boardId)
+        {
+            var response = await _httpClient.GetAsync(ApiRoutes.Jira.GetSprintActive.Replace("{boardId}", boardId.ToString()));
+            var content = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"Failed to get sprint active from Jira: {content}");
+            }
+            return content;
+        }
+
+        public async Task<string> GetIssueParentFromJiraAsync(int sprintId, int maxResults, string activity)
+        {
+            string url = ApiRoutes.Jira.GetIssueParent.Replace("{sprintId}", sprintId.ToString()).Replace("{maxResults}", maxResults.ToString()).Replace("{activity}", activity);
+            var response = await _httpClient.GetAsync(url);
+            var content = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"Failed to get issue parent from Jira: {content}");
+            }
+            return content;
+        }
     }
 }

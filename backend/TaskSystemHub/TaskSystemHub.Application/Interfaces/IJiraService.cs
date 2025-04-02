@@ -7,5 +7,7 @@ namespace TaskSystemHub.Application.Interfaces
         Task<JiraBoardDTO> GetBoardFromJiraAsync();
         Task<string> GetStringBoardFromJiraAsync();
         Task<JiraBoardResponse> GetBoardResponseFromJiraAsync();
+        Task<string> GetSprintActiveFromJiraAsync(int boardId);
+        Task<string> GetIssueParentFromJiraAsync(int sprintId, int maxResults, string activity);
     }
 }

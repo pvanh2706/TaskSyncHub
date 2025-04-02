@@ -33,5 +33,15 @@ namespace TaskSystemHub.Application.Services
                 throw new Exception($"Failed to get board response from Jira: {ex.Message}");
             }
         }
+
+        public async Task<string> GetSprintActiveFromJiraAsync(int boardId)
+        {
+            return await _jiraApiClient.GetSprintActiveFromJiraAsync(boardId);
+        }
+
+        public async Task<string> GetIssueParentFromJiraAsync(int sprintId, int maxResults, string activity)
+        {
+            return await _jiraApiClient.GetIssueParentFromJiraAsync(sprintId, maxResults, activity);
+        }
     }
 }
