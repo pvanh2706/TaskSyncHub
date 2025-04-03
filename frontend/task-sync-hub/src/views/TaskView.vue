@@ -1,5 +1,53 @@
 <template>
     <div>
+      <el-table :data="tasks" border>
+        <el-table-column prop="title" label="Công việc" />
+        <el-table-column label="Hành động">
+          <template #default="{ row }">
+            <el-button type="danger" @click="$emit('deleteTask', row.id)">Xóa</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      
+      <el-table :data="tableData" border style="width: 100%">
+    <!-- Cột Nhập Text -->
+    <el-table-column label="Tên">
+      <template #default="{ row }">
+        <el-input v-model="row.name" placeholder="Nhập tên" />
+      </template>
+    </el-table-column>
+
+    <!-- Cột Chọn Ngày -->
+    <el-table-column label="Ngày sinh">
+      <template #default="{ row }">
+        <el-date-picker 
+          v-model="row.birthday" 
+          type="date" 
+          placeholder="Chọn ngày"
+          format="YYYY-MM-DD"
+        />
+      </template>
+    </el-table-column>
+
+    <!-- Cột Chọn Option -->
+    <el-table-column label="Giới tính">
+      <template #default="{ row }">
+        <el-select v-model="row.gender" placeholder="Chọn giới tính">
+          <el-option label="Nam" value="male"></el-option>
+          <el-option label="Nữ" value="female"></el-option>
+        </el-select>
+      </template>
+    </el-table-column>
+
+    <!-- Cột Hành Động -->
+    <el-table-column label="Hành động">
+      <template #default="{ row }">
+        <el-button type="primary" @click="submitRow(row)">Lưu</el-button>
+      </template>
+    </el-table-column>
+  </el-table>
+
+
       <h1>Danh sách Công Việc 1</h1>
   
       <!-- Nút Thêm Task (Chỉ để Test Vuex) -->
@@ -33,6 +81,10 @@
   // Lấy store Vuex
   const store = useStore();
   const tasks = ref([]);
+  const tableData = ref([
+    { name: 'aa', birthday: '2023-01-01', gender: 'male' },
+    { name: 'bb', birthday: '2023-01-02', gender: 'female' },
+  ]);
   
   // Lấy danh sách task từ Vuex
   tasks.value = store.state.tasks;
@@ -71,6 +123,11 @@
     if (cachedTasks) {
       tasks.value = JSON.parse(cachedTasks);
     }
+  };
+
+  // Submit row
+  const submitRow = (row) => {
+    console.log('Submitted row:', row);
   };
 </script>
   
