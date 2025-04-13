@@ -26,4 +26,12 @@ public class TaskController : ControllerBase
         await _taskRepository.AddTaskAsync(task);
         return CreatedAtAction(nameof(GetAllTasks), new { id = task.Id }, task);
     }
+
+    [HttpPost("create-and-transition")]
+    public async Task<IActionResult> CreateAndTransition([FromBody] CreateIssueRequestDto request)
+    {
+        var result = await _jiraService.CreateIssueAndTransitionAsync(request, "61");
+        if (result) return Ok("Issue created and transitioned.");
+        return StatusCode(500, "Failed to create or transition.");
+    }
 }

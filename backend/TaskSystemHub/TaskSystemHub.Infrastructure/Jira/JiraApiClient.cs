@@ -33,10 +33,11 @@ namespace TaskSystemHub.Infrastructure.Jira
             _httpClient.BaseAddress = new Uri(_jiraBaseUrl);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authToken);
         }
-
+        // Lấy danh sách dự án trong Jira
         public async Task<JiraBoardDTO> GetBoardFromJiraAsync()
         {
-            var response = await _httpClient.GetAsync(ApiRoutes.Jira.GetBoard);
+            string url = ApiRoutes.Jira.GetBoard;
+            var response = await _httpClient.GetAsync(url);
             var content = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
@@ -48,7 +49,8 @@ namespace TaskSystemHub.Infrastructure.Jira
 
         public async Task<string> GetStringBoardFromJiraAsync()
         {
-            var response = await _httpClient.GetAsync(ApiRoutes.Jira.GetBoard);
+            string url = ApiRoutes.Jira.GetBoard;
+            var response = await _httpClient.GetAsync(url);
             var content = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
@@ -95,7 +97,10 @@ namespace TaskSystemHub.Infrastructure.Jira
 
         public async Task<string> GetIssueParentFromJiraAsync(int sprintId, int maxResults, string activity)
         {
-            string url = ApiRoutes.Jira.GetIssueParent.Replace("{sprintId}", sprintId.ToString()).Replace("{maxResults}", maxResults.ToString()).Replace("{activity}", activity);
+            string url = ApiRoutes.Jira.GetIssueParent
+                .Replace("{sprintId}", sprintId.ToString())
+                .Replace("{maxResults}", maxResults.ToString())
+                .Replace("{activity}", activity);
             var response = await _httpClient.GetAsync(url);
             var content = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
@@ -103,6 +108,95 @@ namespace TaskSystemHub.Infrastructure.Jira
                 throw new Exception($"Failed to get issue parent from Jira: {content}");
             }
             return content;
+        }
+        // var createDto = new CreateIssueRequestDto
+        // {
+        //     IssueTypeId = "6",
+        //     CustomField12815 = "Development",
+        //     CustomField13419 = "New Development",
+        //     CustomField14332 = "ezFolio",
+        //     ComponentId = "15690",
+        //     CustomField14338 = "SX_Development",
+        //     AssigneeName = "anh.phamviet",
+        //     CustomField14018 = "Rất phức tạp (4.5h <= EST <= 6h)",
+        //     ParentKey = "EAS-31325",
+        //     ProjectKey = "EAS",
+        //     ProjectId = "175",
+        //     CustomField12412 = "2025-04-10",
+        //     CustomField12413 = "2025-04-10",
+        //     CustomField13630 = "2025-04-10",
+        //     Summary = "Trực, xử lý iss trực",
+        //     WorklogStarted = "2025-04-10T00:00:00.000+0000",
+        //     WorklogTimeSpent = "4.7h",
+        //     WorklogComment = "Trực, xử lý iss trực"
+        // };
+
+        // await _jiraService.CreateIssueAsync(createDto);
+
+        public async Task<HttpResponseMessage> CreateIssueAsync(CreateIssueRequestDto createDto)
+        {
+            var requestDto = new JiraIssueRequestDto
+            {
+                fields = new FieldsDto
+                {
+                    issuetype = new IssueTypeDto { id = createDto.IssueTypeId },
+                    customfield_12815 = new CustomFieldDto { value = createDto.CustomField12815 },
+                    customfield_13419 = new CustomFieldDto { value = createDto.CustomField13419 },
+                    customfield_14332 = new CustomFieldDto { value = createDto.CustomField14332 },
+                    components = new[] { new ComponentDto { id = createDto.ComponentId } },
+                    customfield_14338 = new CustomFieldDto { value = createDto.CustomField14338 },
+                    assignee = new AssigneeDto { name = createDto.AssigneeName },
+                    customfield_14018 = new CustomFieldDto { value = createDto.CustomField14018 },
+                    parent = new ParentDto { key = createDto.ParentKey },
+                    project = new ProjectKeyDto { key = createDto.ProjectKey },
+                    customfield_12412 = createDto.CustomField12412,
+                    customfield_12413 = createDto.CustomField12413,
+                    customfield_13630 = createDto.CustomField13630,
+                    summary = createDto.Summary
+                },
+                project = new ProjectMetaDto
+                {
+                    id = createDto.ProjectId
+                },
+                update = new UpdateDto
+                {
+                    worklog = new[]
+                    {
+                        new WorklogWrapper
+                        {
+                            add = new WorklogAdd
+                            {
+                                started = createDto.WorklogStarted,
+                                timeSpent = createDto.WorklogTimeSpent,
+                                comment = createDto.WorklogComment
+                            }
+                        }
+                    }
+                }
+            };
+
+            var json = JsonSerializer.Serialize(requestDto);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync("https://jira.ezcloudhotel.com/rest/api/2/issue", content);
+            return response;
+        }
+
+        public async Task<bool> TransitionIssueAsync(string issueKey, TransitionRequestDto transitionDto)
+        {
+            var url = $"https://jira.ezcloudhotel.com/rest/api/2/issue/{issueKey}/transitions";
+
+            var jsonContent = JsonSerializer.Serialize(transitionDto);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            // Optional: Nếu bạn set token trong cấu hình HttpClient thì không cần set thủ công như bên dưới.
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add("Authorization", "Basic YW5oLnBoYW12aWV0OjEyMzQ1NkFhQA==");
+            _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
+
+            var response = await _httpClient.PostAsync(url, content);
+
+            return response.IsSuccessStatusCode;
         }
     }
 }
