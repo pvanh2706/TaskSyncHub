@@ -11,7 +11,7 @@ namespace TaskSystemHub.Application.Interfaces
         Task<string> GetStringBoardFromJiraAsync();
         Task<string> GetSprintActiveFromJiraAsync(int boardId);
         Task<string> GetIssueParentFromJiraAsync(int sprintId, int maxResults, string activity);
-        Task<HttpResponseMessage> CreateIssueAsync(CreateIssueRequestDto createDto);
+        Task<JiraIssueCreatedResponse?> CreateIssueAsync(CreateIssueRequestDto createDto);
         Task<bool> TransitionIssueAsync(string issueKey, TransitionRequestDto transitionDto);
     }
 }

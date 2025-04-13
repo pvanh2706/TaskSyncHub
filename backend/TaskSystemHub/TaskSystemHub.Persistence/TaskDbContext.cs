@@ -8,6 +8,9 @@ namespace TaskSystemHub.Persistence
         public TaskDbContext(DbContextOptions<TaskDbContext> options) : base(options) { }
 
         public DbSet<TaskItem> Tasks { get; set; }
+        // dotnet ef migrations add AddScheduledIssueTable
+        // dotnet ef database update
+        public DbSet<ScheduledIssue> ScheduledIssues { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

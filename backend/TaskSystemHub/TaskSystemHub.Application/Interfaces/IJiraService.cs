@@ -9,7 +9,7 @@ namespace TaskSystemHub.Application.Interfaces
         Task<JiraBoardResponse> GetBoardResponseFromJiraAsync();
         Task<string> GetSprintActiveFromJiraAsync(int boardId);
         Task<string> GetIssueParentFromJiraAsync(int sprintId, int maxResults, string activity);
-        Task<bool> CreateIssueAndTransitionAsync(CreateIssueRequestDto createDto, string transitionId);
+        Task<CreateIssueResult> CreateIssueAndTransitionAsync(CreateIssueRequestDto createDto, string transitionId);
 
     }
 }

@@ -46,15 +46,22 @@ namespace TaskSystemHub.Application.Services
             return await _jiraApiClient.GetIssueParentFromJiraAsync(sprintId, maxResults, activity);
         }
 
-        public async Task<bool> CreateIssueAndTransitionAsync(CreateIssueRequestDto createDto, string transitionId)
+        public async Task<CreateIssueResult> CreateIssueAndTransitionAsync(CreateIssueRequestDto createDto, string transitionId)
         {
-             // 1. Tạo issue
-            var issueKey = await _jiraApiClient.CreateIssueAsync(createDto);
-            if (string.IsNullOrEmpty(issueKey))
+            var result = new CreateIssueResult();
+
+            // 1. Tạo issue
+            var issueResponse = await _jiraApiClient.CreateIssueAsync(createDto);
+            if (issueResponse == null)
             {
-                // await _slackService.SendMessageAsync("Failed to create Jira issue.");
-                return false;
+                result.IsIssueCreated = false;
+                result.Message = "❌ Failed to create Jira issue.";
+                await _slackService.SendMessageAsync(result.Message);
+                return result;
             }
+
+            result.IsIssueCreated = true;
+            result.IssueInfo = issueResponse;
 
             // 2. Chuyển trạng thái
             var transitionDto = new TransitionRequestDto
@@ -62,16 +69,21 @@ namespace TaskSystemHub.Application.Services
                 transition = new TransitionDto { id = transitionId }
             };
 
-            var result = await _jiraApiClient.TransitionIssueAsync(issueKey, transitionDto);
-            if (!result)
+            var isTransitioned = await _jiraApiClient.TransitionIssueAsync(issueResponse.key, transitionDto);
+            result.IsTransitioned = isTransitioned;
+
+            if (isTransitioned)
             {
-                // await _slackService.SendMessageAsync($"Created issue *{issueKey}* but failed to transition.");
-                return false;
+                result.Message = $"✅ Created and transitioned Jira issue: *{issueResponse.key}*.";
+            }
+            else
+            {
+                result.Message = $"⚠️ Created issue *{issueResponse.key}* but failed to transition.";
             }
 
-            // 3. Gửi thông báo Slack
-            // await _slackService.SendMessageAsync($"Created and transitioned Jira issue: *{issueKey}*.");
-            return true;
+            await _slackService.SendMessageAsync(result.Message);
+            return result;
         }
+
     }
 }

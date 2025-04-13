@@ -5,6 +5,7 @@ using TaskSystemHub.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using TaskSystemHub.Application.Services;
 using Serilog;
+using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,8 @@ Log.Logger = new LoggerConfiguration()
 builder.Services.AddScoped<IJiraApiClient, JiraApiClient>();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<IJiraService, JiraService>();
+builder.Services.AddScoped<JiraJobService>();
+builder.Services.AddScoped<IScheduledIssueRepository, ScheduledIssueRepository>();
 // builder.Services.AddScoped<ITaskService, TaskService>(); 
 
 builder.Services.AddDbContext<TaskDbContext>(options =>
@@ -41,7 +44,15 @@ builder.Services.AddHttpClient(); // Add HttpClient để sử dụng trong Jira
 // Thêm Serilog vào hệ thống logging của .NET
 builder.Host.UseSerilog();
 
+// Thêm Hangfire
+builder.Services.AddHangfire(x =>
+    x.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddHangfireServer();
+
+builder.Services.AddLogging(); // Đảm bảo rằng dịch vụ logging đã được đăng ký
+
 var app = builder.Build();
+
 // Middleware để kiểm tra logging
 app.Use(async (context, next) =>
 {
@@ -58,8 +69,18 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+// Thêm middleware Hangfire
+app.UseHangfireDashboard();
 
 app.MapControllers();
+
+// Đảm bảo job được lên lịch sau khi app đã chạy
 app.Run();
 
+// Sau khi app.Run(), thêm job Hangfire
+RecurringJob.AddOrUpdate<JiraJobService>(
+    "jira-job-daily",
+    job => job.RunCreateAndTransitionJobAsync(),
+    "0 18 * * *", // 6h chiều mỗi ngày
+    TimeZoneInfo.Local
+);

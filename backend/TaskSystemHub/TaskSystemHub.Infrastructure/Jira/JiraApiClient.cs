@@ -12,6 +12,8 @@ using TaskSystemHub.Shared.Constants;
 using Newtonsoft.Json;
 using TaskSystemHub.Shared.DTOs;
 using Serilog;
+using System.Net;
+using Newtonsoft.Json.Linq;
 
 namespace TaskSystemHub.Infrastructure.Jira
 {
@@ -133,9 +135,9 @@ namespace TaskSystemHub.Infrastructure.Jira
 
         // await _jiraService.CreateIssueAsync(createDto);
 
-        public async Task<HttpResponseMessage> CreateIssueAsync(CreateIssueRequestDto createDto)
+        public async Task<JiraIssueCreatedResponse?> CreateIssueAsync(CreateIssueRequestDto createDto)
         {
-            var requestDto = new JiraIssueRequestDto
+            JiraIssueRequestDto requestDto = new JiraIssueRequestDto
             {
                 fields = new FieldsDto
                 {
@@ -153,50 +155,35 @@ namespace TaskSystemHub.Infrastructure.Jira
                     customfield_12413 = createDto.CustomField12413,
                     customfield_13630 = createDto.CustomField13630,
                     summary = createDto.Summary
-                },
-                project = new ProjectMetaDto
-                {
-                    id = createDto.ProjectId
-                },
-                update = new UpdateDto
-                {
-                    worklog = new[]
-                    {
-                        new WorklogWrapper
-                        {
-                            add = new WorklogAdd
-                            {
-                                started = createDto.WorklogStarted,
-                                timeSpent = createDto.WorklogTimeSpent,
-                                comment = createDto.WorklogComment
-                            }
-                        }
-                    }
                 }
             };
 
-            var json = JsonSerializer.Serialize(requestDto);
+            var json = JsonConvert.SerializeObject(requestDto);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var response = await _httpClient.PostAsync("https://jira.ezcloudhotel.com/rest/api/2/issue", content);
-            return response;
+
+            if (response.StatusCode == HttpStatusCode.Created) // 201
+            {
+                var responseString = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<JiraIssueCreatedResponse>(responseString);
+                return result;
+            }
+
+            return null;
         }
 
         public async Task<bool> TransitionIssueAsync(string issueKey, TransitionRequestDto transitionDto)
         {
             var url = $"https://jira.ezcloudhotel.com/rest/api/2/issue/{issueKey}/transitions";
 
-            var jsonContent = JsonSerializer.Serialize(transitionDto);
+            var jsonContent = JsonConvert.SerializeObject(transitionDto);
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-
-            // Optional: Nếu bạn set token trong cấu hình HttpClient thì không cần set thủ công như bên dưới.
-            _httpClient.DefaultRequestHeaders.Clear();
-            _httpClient.DefaultRequestHeaders.Add("Authorization", "Basic YW5oLnBoYW12aWV0OjEyMzQ1NkFhQA==");
-            _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
 
             var response = await _httpClient.PostAsync(url, content);
 
-            return response.IsSuccessStatusCode;
+            return response.StatusCode == HttpStatusCode.NoContent; // 204
         }
+
     }
 }
