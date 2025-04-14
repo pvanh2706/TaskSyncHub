@@ -106,7 +106,7 @@
   import axios from 'axios'
 
   const scheduled = ref(false)
-let timerId = null
+  // let timerId = null
   // Dữ liệu bảng
   const issues = ref([
     {
@@ -190,13 +190,13 @@ let timerId = null
         sixPM.setDate(sixPM.getDate() + 1)
     }
 
-    const delay = sixPM.getTime() - now.getTime()
+    // const delay = sixPM.getTime() - now.getTime()
     scheduled.value = true
 
-    timerId = setTimeout(async () => {
-        await submitAll()
-        scheduled.value = false
-    }, delay)
+    // timerId = setTimeout(async () => {
+    //     await submitAll()
+    //     scheduled.value = false
+    // }, delay)
   }
   // 🟡 Fetch dữ liệu dropdown giả lập (hoặc gọi từ API thật)
   onMounted(() => {
